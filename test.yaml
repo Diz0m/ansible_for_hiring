@@ -1,0 +1,65 @@
+---
+- hosts: test
+  become: yes
+  vars:
+    domain_name: test.lab
+  tasks:
+
+  - name: install all packages
+    apt:
+      name:
+        - git
+        - snap
+
+  - name: load docker_inst.sh
+    copy:
+      src: ./docker_inst.sh
+      dest: /opt/docker_inst.sh
+
+  - name: chmod +x
+    file: 
+      dest: /opt/docker_inst.sh
+      mode: a+x
+
+  - name: start docker_inst.sh
+    shell: /opt/docker_inst.sh
+ 
+  - name: create dir for Dockerfile
+    file:
+      path: /opt/nginx
+
+  - name: create index.html from template
+    template: 
+      src: ./nginx/index.j2
+      dest: /opt/nginx/index.html
+    
+  - name: create task.conf from template
+    template:  
+      src: ./nginx/task.j2
+      dest: /opt/nginx/task.conf
+
+  - name: copy Dockerfile
+    copy:
+      src: ./nginx/Dockerfile
+      dest: /opt/nginx/Dockerfile
+
+  - name: build docker image
+    shell: docker build /opt/nginx -t my-nginx
+
+  - name: run docker container
+    shell: docker run --name my-nginx -p 80:80 -d my-nginx
+
+  - name: certbot_step_1
+    shell: sudo snap install core; sudo snap refresh core
+
+  - name: install certbot
+    shell: sudo snap install --classic certbot
+
+  - name: ln -s certbot
+    shell: sudo ln -s /snap/bin/certbot /usr/bin/certbot
+
+  - name: certbo start
+    shell: sudo certbot --nginx
+
+  - name: certbot
+    shell: sudo certbot renew --dry-run 

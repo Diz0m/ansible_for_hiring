@@ -1,0 +1,9 @@
+[test]
+127.0.0.1
+
+[test:vars]
+ansible_connection=ssh
+ansible_ssh_user=user
+ansible_ssh_pass=resu
+ansible_become_password=resu
+
